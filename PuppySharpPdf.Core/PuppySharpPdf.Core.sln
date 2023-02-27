@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PuppySharpPdf.Core", "Puppy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PuppySharpPdf.Core.Tests", "PuppySharpPdf.Core.Tests\PuppySharpPdf.Core.Tests.csproj", "{212F598B-99EE-48FA-8BEF-C4378258427E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PuppySharpPdf.Core.Demo", "PuppySharpPdf.Core.Demo\PuppySharpPdf.Core.Demo.csproj", "{38F80C28-0C78-4B1E-9812-A0948FFE1BD6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{212F598B-99EE-48FA-8BEF-C4378258427E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{212F598B-99EE-48FA-8BEF-C4378258427E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{212F598B-99EE-48FA-8BEF-C4378258427E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38F80C28-0C78-4B1E-9812-A0948FFE1BD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38F80C28-0C78-4B1E-9812-A0948FFE1BD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38F80C28-0C78-4B1E-9812-A0948FFE1BD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38F80C28-0C78-4B1E-9812-A0948FFE1BD6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

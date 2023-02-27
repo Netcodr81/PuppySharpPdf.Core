@@ -1,0 +1,29 @@
+﻿<style>
+    @*This footer style ensures the footer aligns to the bottom of the page and the background color will be visible*@
+    #footer {
+        -webkit-print-color-adjust: exact;
+        padding: 0 !important;
+        height: 100% !important;
+    }
+</style>
+
+<!--A simple footer -->
+@*<div style="font-size: 10px; text-align: center; width: 100%; padding: 20px;">
+        Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+    </div>*@
+
+<!--A simple footer with a background-->
+<div style="font-size: 10px; text-align: center; width: 100%; padding: 20px; background-color: #b3b1b1; ">
+    Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+</div>
+
+<!-- A more complex footer with an image and a link -->
+@*<div style="font-size: 10px; text-align: center; width: 100%; margin-top: 20px;">
+    <img src="logo.png" alt="Company Logo" style="height: 20px; width: auto; margin-right: 10px;">
+    � 2023 My Company, Inc. | <a href="https://www.mycompany.com">www.mycompany.com</a> | Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+</div>*@
+
+<!-- A footer with a background color and border -->
+@*<div style="font-size: 10px; text-align: center; width: 100%; margin-top: 20px; background-color: #f2f2f2; border-top: 1px solid #ccc; padding-top: 10px;">
+    Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+</div>*@
