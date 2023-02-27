@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("PuppySharpPdf.Core.Tests")]
 namespace PuppySharpPdf.Core.Utils;
 internal class FileUtils
 {
