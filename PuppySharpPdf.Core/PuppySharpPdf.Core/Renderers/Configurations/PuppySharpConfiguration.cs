@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using PuppySharpPdf.Core.Interfaces;
+using PuppySharpPdf.Core.Utils;
 
 namespace PuppySharpPdf.Core.Renderers.Configurations;
 public static class PuppySharpConfiguration
@@ -10,6 +12,9 @@ public static class PuppySharpConfiguration
         if (services == null) throw new ArgumentNullException(nameof(services));
 
         services.AddHttpContextAccessor();
+
+        services.AddScoped<IHtmlUtils, HtmlUtils>();
+        services.AddScoped<IPuppyPdfRenderer, PuppyPdfRenderer>();
 
         return services;
     }
@@ -23,9 +28,8 @@ public static class PuppySharpConfiguration
         });
     }
 
-    public static HttpContext GetHttpContext(this HttpContext context)
+    internal static HttpContext GetHttpContext(this HttpContext context)
     {
         return (HttpContext)context.Items["HttpContext"];
     }
-
 }

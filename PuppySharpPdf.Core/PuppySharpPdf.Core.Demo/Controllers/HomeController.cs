@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PuppySharpPdf.Core.Demo.Helpers;
 using PuppySharpPdf.Core.Demo.Models;
-using PuppySharpPdf.Core.Renderers;
+using PuppySharpPdf.Core.Interfaces;
 using PuppySharpPdf.Core.Renderers.Configurations;
 using System.Diagnostics;
 using Westwind.AspNetCore.Views;
@@ -10,9 +9,11 @@ namespace PuppySharpPdf.Core.Demo.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    readonly IPuppyPdfRenderer _pdfRenderer;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, IPuppyPdfRenderer pdfRenderer)
     {
+        _pdfRenderer = pdfRenderer;
         _logger = logger;
     }
 
@@ -38,12 +39,6 @@ public class HomeController : Controller
 
         if (request.UseLocalExe)
         {
-            var pdfRendererLocal = new PuppyPdfRenderer(options =>
-            {
-                options.ChromeExecutablePath = Server.MapPath("~/Content/ChromeBrowser/chrome-win/chrome.exe");
-
-            });
-
 
             if (request.DisplayHeaderFooter)
             {
@@ -53,12 +48,12 @@ public class HomeController : Controller
 
                 };
 
-                var resultLocal = await pdfRendererLocal.GeneratePdfFromUrlAsync(request.Url, pdfOptions);
+                var resultLocal = await _pdfRenderer.GeneratePdfFromUrlAsync(request.Url, pdfOptions);
                 return File(resultLocal.Value, "application/pdf", "PdfFromUrl.pdf");
             }
             else
             {
-                var resultLocal = await pdfRendererLocal.GeneratePdfFromUrlAsync(request.Url);
+                var resultLocal = await _pdfRenderer.GeneratePdfFromUrlAsync(request.Url);
                 return File(resultLocal.Value, "application/pdf", "PdfFromUrl.pdf");
             }
 
@@ -66,8 +61,8 @@ public class HomeController : Controller
 
         }
 
-        var pdfRenderer = new PuppyPdfRenderer();
-        var result = await pdfRenderer.GeneratePdfFromUrlAsync(request.Url);
+
+        var result = await _pdfRenderer.GeneratePdfFromUrlAsync(request.Url);
 
         return File(result.Value, "application/pdf", "PdfFromUrl.pdf");
     }
@@ -87,13 +82,9 @@ public class HomeController : Controller
 
         if (request.UseLocalExe)
         {
-            var pdfRendererLocal = new PuppyPdfRenderer(options =>
-            {
-                options.ChromeExecutablePath = Server.MapPath("~/Content/ChromeBrowser/chrome-win/chrome.exe");
 
-            });
 
-            var resultLocal = await pdfRendererLocal.GeneratePdfFromUrlAsync(request.Url, options =>
+            var resultLocal = await _pdfRenderer.GeneratePdfFromUrlAsync(request.Url, options =>
             {
                 options.PrintBackground = request.PdfOptions.PrintBackground;
                 options.Format = request.PdfOptions.GetPaperFormatType();
@@ -113,8 +104,8 @@ public class HomeController : Controller
             return File(resultLocal.Value, "application/pdf", "PdfFromUrlWithCustomOptions.pdf");
         }
 
-        var pdfRenderer = new PuppyPdfRenderer();
-        var result = await pdfRenderer.GeneratePdfFromUrlAsync(request.Url, options =>
+
+        var result = await _pdfRenderer.GeneratePdfFromUrlAsync(request.Url, options =>
         {
             options.PrintBackground = request.PdfOptions.PrintBackground;
             options.Format = request.PdfOptions.GetPaperFormatType();
@@ -153,11 +144,7 @@ public class HomeController : Controller
 
         if (model.UseLocalExe)
         {
-            var pdfRendererLocal = new PuppyPdfRenderer(options =>
-            {
-                options.ChromeExecutablePath = Server.MapPath("~/Content/ChromeBrowser/chrome-win/chrome.exe");
 
-            });
 
             if (model.IncludeFooter || model.IncludeHeader)
             {
@@ -176,7 +163,7 @@ public class HomeController : Controller
                     }
                 };
 
-                var pdfWithHeader = await pdfRendererLocal.GeneratePdfFromHtmlAsync(html.Result, pdfOptions);
+                var pdfWithHeader = await _pdfRenderer.GeneratePdfFromHtmlAsync(html.Result, pdfOptions);
                 return File(pdfWithHeader.Value, "application/pdf", fileName);
             }
 
@@ -193,12 +180,12 @@ public class HomeController : Controller
                 }
             };
 
-            var resultLocal = await pdfRendererLocal.GeneratePdfFromHtmlAsync(html.Result, noHeaderFooterPdfOptions);
+            var resultLocal = await _pdfRenderer.GeneratePdfFromHtmlAsync(html.Result, noHeaderFooterPdfOptions);
 
             return File(resultLocal.Value, "application/pdf", fileName);
         }
 
-        var pdfRenderer = new PuppyPdfRenderer();
+
 
         if (model.IncludeFooter || model.IncludeHeader)
         {
@@ -217,7 +204,7 @@ public class HomeController : Controller
                 }
             };
 
-            var pdfWithHeader = await pdfRenderer.GeneratePdfFromHtmlAsync(html.Result, pdfOptions);
+            var pdfWithHeader = await _pdfRenderer.GeneratePdfFromHtmlAsync(html.Result, pdfOptions);
             return File(pdfWithHeader.Value, "application/pdf", fileName);
         }
 
@@ -233,7 +220,7 @@ public class HomeController : Controller
 
             }
         };
-        var result = await pdfRenderer.GeneratePdfFromHtmlAsync(html.Result, noHeaderPdfOptions);
+        var result = await _pdfRenderer.GeneratePdfFromHtmlAsync(html.Result, noHeaderPdfOptions);
         return File(result.Value, "application/pdf", fileName);
     }
 
@@ -249,7 +236,7 @@ public class HomeController : Controller
 
         var html = model.PdfType == "CardiganWelshCorgi" ? System.IO.File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "Views/Shared/Templates/CardiganWelshCorgi.html") :
             System.IO.File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "Views/Shared/Templates/PembrokeWelshCorgi.html");
-        var pdfRenderer = new PuppyPdfRenderer();
+
         var fileName = model.PdfType == "CardiganWelshCorgi" ? "CardiganWelshCorgi_html.pdf" : "PembrokeWelshCorgi_html.pdf";
 
         if (model.IncludeFooter || model.IncludeHeader)
@@ -271,7 +258,7 @@ public class HomeController : Controller
 
 
 
-            var results = await pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
+            var results = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
 
             return File(results.Value, "application/pdf", fileName);
         }
@@ -289,7 +276,7 @@ public class HomeController : Controller
             }
         };
 
-        var result = await pdfRenderer.GeneratePdfFromHtmlAsync(html, noHeaderPdfOptions);
+        var result = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, noHeaderPdfOptions);
 
         return File(result.Value, "application/pdf", fileName);
     }
@@ -320,7 +307,7 @@ public class HomeController : Controller
 
         var html = await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/CorgiInfo.cshtml", model, this.ControllerContext);
         var fileName = model.PdfType == "CardiganWelshCorgi" ? "CardiganWelshCorgi_razor.pdf" : "PembrokeWelshCorgi_razor.pdf";
-        var pdfRenderer = new PuppyPdfRenderer();
+
 
         var pdfOptions = new PdfOptions
         {
@@ -341,13 +328,9 @@ public class HomeController : Controller
 
         if (model.UseLocalExe)
         {
-            var pdfRendererLocal = new PuppyPdfRenderer(options =>
-            {
-                options.ChromeExecutablePath = Server.MapPath("~/Content/ChromeBrowser/chrome-win/chrome.exe");
 
-            });
 
-            var resultFromLocalExe = await pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
+            var resultFromLocalExe = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
             return File(resultFromLocalExe.Value, "application/pdf", fileName);
 
         }
@@ -356,7 +339,7 @@ public class HomeController : Controller
 
 
 
-        var result = await pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
+        var result = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
         return File(result.Value, "application/pdf", fileName);
     }
 
