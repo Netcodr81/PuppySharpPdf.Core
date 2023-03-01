@@ -20,6 +20,6 @@ public static class PuppySharpExtensions
 
     public static string NormalizeFilePath(this string filePath)
     {
-        return filePath.Replace("../", string.Empty).Replace("..//", string.Empty).Replace("wwwroot", string.Empty).Replace("./", string.Empty).Replace(".//", string.Empty).TrimStart('/').TrimStart('/');
+        return filePath.Replace("~", string.Empty).Replace("../", string.Empty).Replace("..//", string.Empty).Replace("wwwroot", string.Empty).Replace("./", string.Empty).Replace(".//", string.Empty).TrimStart('/').TrimStart('/');
     }
 }

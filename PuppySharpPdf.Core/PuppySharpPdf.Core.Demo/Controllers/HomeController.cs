@@ -139,61 +139,16 @@ public class HomeController : Controller
             return View(model);
         }
 
-        var html = await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/CorgiInfo.cshtml", model, this.ControllerContext);
+        var html = await ViewRenderer.RenderViewToStringAsync("../Shared/Templates/CorgiInfo", model, this.ControllerContext, true);
         var fileName = model.PdfType == "CardiganWelshCorgi" ? "CardiganWelshCorgi_razor.pdf" : "PembrokeWelshCorgi_razor.pdf";
-
-        if (model.UseLocalExe)
-        {
-
-
-            if (model.IncludeFooter || model.IncludeHeader)
-            {
-                var pdfOptions = new PdfOptions
-                {
-                    DisplayHeaderFooter = true,
-                    HeaderTemplate = model.IncludeHeader ? await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/Header.cshtml", model, this.ControllerContext) : null,
-                    FooterTemplate = model.IncludeFooter ? await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/Footer.cshtml", null, this.ControllerContext) : null,
-                    MarginOptions = new MarginOptions
-                    {
-                        Top = "160px",
-                        Bottom = "100px",
-                        Left = "0px",
-                        Right = "0px"
-
-                    }
-                };
-
-                var pdfWithHeader = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
-                return File(pdfWithHeader.Value, "application/pdf", fileName);
-            }
-
-            var noHeaderFooterPdfOptions = new PdfOptions
-            {
-                DisplayHeaderFooter = false,
-                MarginOptions = new MarginOptions
-                {
-                    Top = "40px",
-                    Bottom = "80px",
-                    Left = "0px",
-                    Right = "0px"
-
-                }
-            };
-
-            var resultLocal = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, noHeaderFooterPdfOptions);
-
-            return File(resultLocal.Value, "application/pdf", fileName);
-        }
-
-
 
         if (model.IncludeFooter || model.IncludeHeader)
         {
             var pdfOptions = new PdfOptions
             {
                 DisplayHeaderFooter = true,
-                HeaderTemplate = model.IncludeHeader ? await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/Header.cshtml", model, this.ControllerContext) : null,
-                FooterTemplate = model.IncludeFooter ? await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/Footer.cshtml", null, this.ControllerContext) : null,
+                HeaderTemplate = model.IncludeHeader ? await ViewRenderer.RenderViewToStringAsync("../Shared/Templates/Header", model, this.ControllerContext, true) : null,
+                FooterTemplate = model.IncludeFooter ? await ViewRenderer.RenderViewToStringAsync("../Shared/Templates/Footer", null, this.ControllerContext, true) : null,
                 MarginOptions = new MarginOptions
                 {
                     Top = "160px",
@@ -244,8 +199,8 @@ public class HomeController : Controller
             var pdfOptions = new PdfOptions
             {
                 DisplayHeaderFooter = true,
-                HeaderTemplate = model.IncludeHeader ? await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/Header.cshtml", model, this.ControllerContext) : null,
-                FooterTemplate = model.IncludeFooter ? await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/Footer.cshtml", null, this.ControllerContext) : null,
+                HeaderTemplate = model.IncludeHeader ? await ViewRenderer.RenderViewToStringAsync("../Shared/Templates/Header", model, this.ControllerContext, true) : null,
+                FooterTemplate = model.IncludeFooter ? await ViewRenderer.RenderViewToStringAsync("../Shared/Templates", null, this.ControllerContext, true) : null,
                 MarginOptions = new MarginOptions
                 {
                     Top = "160px",
@@ -283,13 +238,46 @@ public class HomeController : Controller
 
     public IActionResult GeneratePdfUsingHtmlTemplateWithCustomOptions()
     {
+        var model = new CorgiTemplateViewModel() { PdfOptions = new PdfOptionsViewModel() };
         return View(new CorgiTemplateViewModel() { PdfOptions = new PdfOptionsViewModel() });
     }
 
     [HttpPost]
-    public IActionResult GeneratePdfUsingHtmlTemplateWithCustomOptions(CorgiTemplateViewModel model)
+    public async Task<IActionResult> GeneratePdfUsingHtmlTemplateWithCustomOptions(CorgiTemplateViewModel model)
     {
-        return View();
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var html = model.PdfType == "CardiganWelshCorgi" ? System.IO.File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "Views/Shared/Templates/CardiganWelshCorgi.html") :
+           System.IO.File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "Views/Shared/Templates/PembrokeWelshCorgi.html");
+
+        var fileName = model.PdfType == "CardiganWelshCorgi" ? "CardiganWelshCorgi_html.pdf" : "PembrokeWelshCorgi_html.pdf";
+
+
+        var pdfOptions = new PdfOptions
+        {
+            PrintBackground = model.PdfOptions.PrintBackground,
+            Format = model.PdfOptions.GetPaperFormatType(),
+            Scale = model.PdfOptions.Scale,
+            DisplayHeaderFooter = model.PdfOptions.DisplayHeaderFooter,
+            HeaderTemplate = model.IncludeHeader ? await ViewRenderer.RenderViewToStringAsync("../Shared/Templates/Header", model, this.ControllerContext, true) : null,
+            FooterTemplate = model.IncludeFooter ? await ViewRenderer.RenderViewToStringAsync("../Shared/Templates/Footer", null, this.ControllerContext, true) : null,
+            Landscape = model.PdfOptions.Landscape,
+            PageRanges = model.PdfOptions.PageRanges,
+            Width = model.PdfOptions.Width,
+            Height = model.PdfOptions.Height,
+            MarginOptions = model.PdfOptions.MarginOptions,
+            PreferCSSPageSize = model.PdfOptions.PreferCSSPageSize,
+            OmitBackground = model.PdfOptions.OmitBackground
+        };
+
+        var result = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
+        return File(result.Value, "application/pdf", fileName);
+
+
+
     }
 
     public IActionResult GeneratePdfUsingRazorTemplateWithCustomOptions()
@@ -305,7 +293,7 @@ public class HomeController : Controller
             return View(model);
         }
 
-        var html = await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/CorgiInfo.cshtml", model, this.ControllerContext);
+        var html = await ViewRenderer.RenderViewToStringAsync("../Shared/Templates/CorgiInfo", model, this.ControllerContext, true);
         var fileName = model.PdfType == "CardiganWelshCorgi" ? "CardiganWelshCorgi_razor.pdf" : "PembrokeWelshCorgi_razor.pdf";
 
 
@@ -315,8 +303,8 @@ public class HomeController : Controller
             Format = model.PdfOptions.GetPaperFormatType(),
             Scale = model.PdfOptions.Scale,
             DisplayHeaderFooter = model.PdfOptions.DisplayHeaderFooter,
-            HeaderTemplate = model.IncludeHeader ? await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/Header.cshtml", model, this.ControllerContext) : null,
-            FooterTemplate = model.IncludeFooter ? await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/Footer.cshtml", null, this.ControllerContext) : null,
+            HeaderTemplate = model.IncludeHeader ? await ViewRenderer.RenderViewToStringAsync("../Shared/Templates/Header", model, this.ControllerContext, true) : null,
+            FooterTemplate = model.IncludeFooter ? await ViewRenderer.RenderViewToStringAsync("../Shared/Templates/Footer", null, this.ControllerContext, true) : null,
             Landscape = model.PdfOptions.Landscape,
             PageRanges = model.PdfOptions.PageRanges,
             Width = model.PdfOptions.Width,
@@ -325,19 +313,6 @@ public class HomeController : Controller
             PreferCSSPageSize = model.PdfOptions.PreferCSSPageSize,
             OmitBackground = model.PdfOptions.OmitBackground
         };
-
-        if (model.UseLocalExe)
-        {
-
-
-            var resultFromLocalExe = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
-            return File(resultFromLocalExe.Value, "application/pdf", fileName);
-
-        }
-
-
-
-
 
         var result = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
         return File(result.Value, "application/pdf", fileName);

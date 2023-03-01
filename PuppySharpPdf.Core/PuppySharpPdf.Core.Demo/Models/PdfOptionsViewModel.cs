@@ -14,14 +14,14 @@ public class PdfOptionsViewModel
     public bool DisplayHeaderFooter { get; set; }
 
     [DisplayName("Header Template")]
-    public string HeaderTemplate { get; set; } = string.Empty;
+    public string? HeaderTemplate { get; set; } = string.Empty;
 
     [DisplayName("Footer Template")]
-    public string FooterTemplate { get; set; } = string.Empty;
+    public string? FooterTemplate { get; set; } = string.Empty;
     public bool Landscape { get; set; }
 
     [DisplayName("Page Ranges")]
-    public string PageRanges { get; set; } = string.Empty;
+    public string? PageRanges { get; set; } = string.Empty;
     public object? Width { get; set; }
     public object? Height { get; set; }
     public MarginOptions MarginOptions { get; set; } = new MarginOptions();
