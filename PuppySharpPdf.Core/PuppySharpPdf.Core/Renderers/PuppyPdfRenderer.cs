@@ -2,7 +2,6 @@
 using PuppeteerSharp;
 using PuppeteerSharp.Media;
 using PuppySharpPdf.Core.Common;
-using PuppySharpPdf.Core.Common.Mapping;
 using PuppySharpPdf.Core.Interfaces;
 using PuppySharpPdf.Core.Renderers.Configurations;
 using System.Text.RegularExpressions;
@@ -11,18 +10,23 @@ using System.Text.RegularExpressions;
 namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPdfRenderer
 {
     readonly IHtmlUtils _htmlUtils;
+    readonly IPuppyMapper _puppyMapper;
+    readonly IHttpClientFactory _httpClientFactory;
     public RendererOptions RendererOptions { get; }
 
-    public PuppyPdfRenderer(IHtmlUtils htmlUtils)
+    public PuppyPdfRenderer(IHtmlUtils htmlUtils, IPuppyMapper puppyMapper, IHttpClientFactory httpClientFactory)
     {
-
+        _httpClientFactory = httpClientFactory;
+        _puppyMapper = puppyMapper;
         RendererOptions = new RendererOptions();
         _htmlUtils = htmlUtils;
     }
 
-    public PuppyPdfRenderer(Action<RendererOptions> options, IHtmlUtils htmlUtils)
+    public PuppyPdfRenderer(Action<RendererOptions> options, IHtmlUtils htmlUtils, IPuppyMapper puppyMapper, IHttpClientFactory httpClientFactory)
     {
         _htmlUtils = htmlUtils;
+        _httpClientFactory = httpClientFactory;
+        _puppyMapper = puppyMapper;
         var rendererOptions = new RendererOptions();
         options?.Invoke(rendererOptions); ;
 
@@ -47,7 +51,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
             var browserFetcher = new BrowserFetcher();
             await browserFetcher.DownloadAsync();
         }
-        await using var browser = await Puppeteer.LaunchAsync(options: PuppyMapper.MapToLaunchOptions(RendererOptions));
+        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
         await using var page = await browser.NewPageAsync();
 
         try
@@ -93,7 +97,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
             await browserFetcher.DownloadAsync();
         }
 
-        await using var browser = await Puppeteer.LaunchAsync(options: PuppyMapper.MapToLaunchOptions(RendererOptions));
+        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
         await using var page = await browser.NewPageAsync();
 
         try
@@ -103,7 +107,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
             await page.SetJavaScriptEnabledAsync(true);
             await page.WaitForNetworkIdleAsync();
 
-            var result = await page.PdfDataAsync(customPdfOptions.MappedPdfOptions);
+            var result = await page.PdfDataAsync(NormailzeHeaderFooters(customPdfOptions).Result.MappedPdfOptions);
             return Result.Success(result);
 
         }
@@ -141,7 +145,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
         }
 
 
-        await using var browser = await Puppeteer.LaunchAsync(options: PuppyMapper.MapToLaunchOptions(RendererOptions));
+        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
         await using var page = await browser.NewPageAsync();
 
         try
@@ -149,7 +153,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
             await page.GoToAsync(url);
             await page.SetJavaScriptEnabledAsync(true);
             await page.WaitForNetworkIdleAsync();
-            var result = await page.PdfDataAsync(pdfOptions.MappedPdfOptions);
+            var result = await page.PdfDataAsync(NormailzeHeaderFooters(pdfOptions).Result.MappedPdfOptions);
             return Result.Success(result);
         }
         catch (Exception ex)
@@ -179,17 +183,17 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
             await browserFetcher.DownloadAsync();
         }
 
-        await using var browser = await Puppeteer.LaunchAsync(options: PuppyMapper.MapToLaunchOptions(RendererOptions));
+        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
 
         using var page = await browser.NewPageAsync();
         await page.EmulateMediaTypeAsync(MediaType.Screen);
         try
         {
-            html = _htmlUtils.NormalizeHtmlString(html);
+            html = await _htmlUtils.NormalizeHtmlString(html);
 
             await page.SetContentAsync(html);
 
-            await page.ImportCssStyles(html, _htmlUtils.FindCssTagSources(html));
+            await page.ImportCssStyles(html, await _htmlUtils.FindCssTagSources(html), _httpClientFactory.CreateClient(ConfigConstants.PuppyHttpClient));
             await page.SetJavaScriptEnabledAsync(true);
             await page.WaitForNetworkIdleAsync();
             var result = await page.PdfDataAsync(new Core.Renderers.Configurations.PdfOptions().MappedPdfOptions);
@@ -223,21 +227,21 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
         var pdfOptions = new Core.Renderers.Configurations.PdfOptions();
         options?.Invoke(pdfOptions);
 
-        await using var browser = await Puppeteer.LaunchAsync(options: PuppyMapper.MapToLaunchOptions(RendererOptions));
+        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
 
         using var page = await browser.NewPageAsync();
         await page.EmulateMediaTypeAsync(MediaType.Screen);
 
         try
         {
-            html = _htmlUtils.NormalizeHtmlString(html);
+            html = await _htmlUtils.NormalizeHtmlString(html);
 
             await page.SetContentAsync(html);
 
-            await page.ImportCssStyles(html, _htmlUtils.FindCssTagSources(html));
+            await page.ImportCssStyles(html, await _htmlUtils.FindCssTagSources(html), _httpClientFactory.CreateClient(ConfigConstants.PuppyHttpClient));
             await page.SetJavaScriptEnabledAsync(true);
             await page.WaitForNetworkIdleAsync();
-            var result = await page.PdfDataAsync(pdfOptions.MappedPdfOptions);
+            var result = await page.PdfDataAsync(NormailzeHeaderFooters(pdfOptions).Result.MappedPdfOptions);
             return Result.Success(result);
         }
         catch (Exception ex)
@@ -267,21 +271,21 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
         }
 
 
-        await using var browser = await Puppeteer.LaunchAsync(options: PuppyMapper.MapToLaunchOptions(RendererOptions));
+        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
 
         using var page = await browser.NewPageAsync();
         await page.EmulateMediaTypeAsync(MediaType.Screen);
 
         try
         {
-            html = _htmlUtils.NormalizeHtmlString(html);
+            html = await _htmlUtils.NormalizeHtmlString(html);
 
             await page.SetContentAsync(html);
 
-            await page.ImportCssStyles(html, _htmlUtils.FindCssTagSources(html));
+            await page.ImportCssStyles(html, await _htmlUtils.FindCssTagSources(html), _httpClientFactory.CreateClient(ConfigConstants.PuppyHttpClient));
             await page.SetJavaScriptEnabledAsync(true);
             await page.WaitForNetworkIdleAsync(new WaitForNetworkIdleOptions() { IdleTime = 1000 });
-            var result = await page.PdfDataAsync(pdfOptions.MappedPdfOptions);
+            var result = await page.PdfDataAsync(NormailzeHeaderFooters(pdfOptions).Result.MappedPdfOptions);
             return Result.Success(result);
         }
         catch (Exception ex)
@@ -294,5 +298,13 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
             await page.CloseAsync();
         }
 
+    }
+
+    private async Task<PuppySharpPdf.Core.Renderers.Configurations.PdfOptions> NormailzeHeaderFooters(PuppySharpPdf.Core.Renderers.Configurations.PdfOptions pdfOptions)
+    {
+        pdfOptions.HeaderTemplate = pdfOptions.HeaderTemplate != null ? await _htmlUtils.NormalizeHtmlString(pdfOptions.HeaderTemplate) : null;
+        pdfOptions.FooterTemplate = pdfOptions.FooterTemplate != null ? await _htmlUtils.NormalizeHtmlString(pdfOptions.FooterTemplate) : null;
+
+        return pdfOptions;
     }
 }

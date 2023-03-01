@@ -1,17 +1,17 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using PuppySharpPdf.Core.Common;
 using PuppySharpPdf.Core.Interfaces;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace PuppySharpPdf.Core.Utils;
 internal class HtmlUtils : IHtmlUtils
 {
-    readonly IHttpContextAccessor _context;
-    public HtmlUtils(IHttpContextAccessor context)
+
+    readonly IHttpClientFactory _httpClientFactory;
+    public HtmlUtils(IHttpClientFactory httpClientFactory)
     {
-        _context = context;
+        this._httpClientFactory = httpClientFactory;
     }
-    public List<string> FindImageTagSources(string html)
+    public async Task<List<string>> FindImageTagSources(string html)
     {
         var matchPattern = @"<img.+?src=[\""'](.+?)[\""'].*?>";
 
@@ -23,7 +23,7 @@ internal class HtmlUtils : IHtmlUtils
         return matches;
     }
 
-    public List<string> FindCssTagSources(string html)
+    public async Task<List<string>> FindCssTagSources(string html)
     {
         var matchPattern = "<link[^>]*rel=[\"']stylesheet[\"'][^>]*>";
 
@@ -45,14 +45,11 @@ internal class HtmlUtils : IHtmlUtils
         return matches;
     }
 
-    public string RenderImageToBase64(string imgPath)
+    public async Task<string> RenderImageToBase64(string imgPath)
     {
         try
         {
 
-            var basePath = _context.HttpContext.Request.PathBase;
-
-            var filePath = Path.Combine(basePath, imgPath.Replace("~", string.Empty).Replace("wwwroot", string.Empty));
 
             if (Regex.IsMatch(imgPath, @"https?://"))
             {
@@ -66,7 +63,9 @@ internal class HtmlUtils : IHtmlUtils
                 }
             }
 
-            var imgFileBytes = File.ReadAllBytes(filePath);
+            var client2 = _httpClientFactory.CreateClient(ConfigConstants.PuppyHttpClient);
+
+            var imgFileBytes = await client2.GetByteArrayAsync(imgPath.NormalizeFilePath());
             return $"data:image/{Path.GetExtension(imgPath).Substring(1)};base64,{Convert.ToBase64String(imgFileBytes)}";
         }
         catch (Exception)
@@ -79,9 +78,9 @@ internal class HtmlUtils : IHtmlUtils
 
     }
 
-    public string NormalizeHtmlString(string html)
+    public async Task<string> NormalizeHtmlString(string html)
     {
-        var imageTagsInHtml = FindImageTagSources(html);
+        var imageTagsInHtml = await FindImageTagSources(html);
 
 
 
@@ -89,7 +88,7 @@ internal class HtmlUtils : IHtmlUtils
         {
             foreach (var tag in imageTagsInHtml)
             {
-                var convertedTag = RenderImageToBase64(tag);
+                var convertedTag = await RenderImageToBase64(tag);
                 html = html.Replace(tag, convertedTag);
             }
         }
@@ -97,47 +96,5 @@ internal class HtmlUtils : IHtmlUtils
         return html;
     }
 
-    public string NormalizeHeaderFooter(string html, List<string> styleLinks)
-    {
-        var styleBuilder = new StringBuilder();
 
-        html = NormalizeHtmlString(html);
-
-        if (styleLinks.Count > 0)
-        {
-            styleBuilder.Append("<style>");
-
-
-            foreach (var link in styleLinks)
-            {
-                if (!Regex.IsMatch(link, @"https?://"))
-                {
-                    var css = System.IO.File.ReadAllText($"{AppDomain.CurrentDomain.BaseDirectory}{link.Replace("~", string.Empty)}");
-                    styleBuilder.Append(css);
-                }
-                else
-                {
-                    using (var handler = new HttpClientHandler())
-                    {
-                        using (var client = new HttpClient(handler))
-                        {
-                            var css = client.GetStringAsync(link).Result;
-                            styleBuilder.Append(css);
-                        }
-                    }
-                }
-            }
-
-            styleBuilder.Append("</style>");
-
-            styleBuilder.Append(html);
-
-            var test = styleBuilder.ToString();
-
-            return styleBuilder.ToString();
-        }
-
-        return html;
-
-    }
 }

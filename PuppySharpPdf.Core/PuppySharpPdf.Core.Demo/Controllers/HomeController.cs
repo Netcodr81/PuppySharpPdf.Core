@@ -139,7 +139,7 @@ public class HomeController : Controller
             return View(model);
         }
 
-        var html = ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/CorgiInfo.cshtml", model, this.ControllerContext);
+        var html = await ViewRenderer.RenderViewToStringAsync("~/Views/Shared/Templates/CorgiInfo.cshtml", model, this.ControllerContext);
         var fileName = model.PdfType == "CardiganWelshCorgi" ? "CardiganWelshCorgi_razor.pdf" : "PembrokeWelshCorgi_razor.pdf";
 
         if (model.UseLocalExe)
@@ -163,7 +163,7 @@ public class HomeController : Controller
                     }
                 };
 
-                var pdfWithHeader = await _pdfRenderer.GeneratePdfFromHtmlAsync(html.Result, pdfOptions);
+                var pdfWithHeader = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
                 return File(pdfWithHeader.Value, "application/pdf", fileName);
             }
 
@@ -180,7 +180,7 @@ public class HomeController : Controller
                 }
             };
 
-            var resultLocal = await _pdfRenderer.GeneratePdfFromHtmlAsync(html.Result, noHeaderFooterPdfOptions);
+            var resultLocal = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, noHeaderFooterPdfOptions);
 
             return File(resultLocal.Value, "application/pdf", fileName);
         }
@@ -204,7 +204,7 @@ public class HomeController : Controller
                 }
             };
 
-            var pdfWithHeader = await _pdfRenderer.GeneratePdfFromHtmlAsync(html.Result, pdfOptions);
+            var pdfWithHeader = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, pdfOptions);
             return File(pdfWithHeader.Value, "application/pdf", fileName);
         }
 
@@ -220,7 +220,7 @@ public class HomeController : Controller
 
             }
         };
-        var result = await _pdfRenderer.GeneratePdfFromHtmlAsync(html.Result, noHeaderPdfOptions);
+        var result = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, noHeaderPdfOptions);
         return File(result.Value, "application/pdf", fileName);
     }
 

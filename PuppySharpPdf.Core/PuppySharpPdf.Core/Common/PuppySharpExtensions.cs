@@ -1,26 +1,25 @@
 ﻿using PuppeteerSharp;
-using PuppySharpPdf.Core.Interfaces;
 using System.Text.RegularExpressions;
 
 namespace PuppySharpPdf.Core.Common;
 public static class PuppySharpExtensions
 {
-    public static async Task ImportCssStyles(this PuppeteerSharp.IPage page, string html, List<string> cssPathTags)
+    public static async Task ImportCssStyles(this PuppeteerSharp.IPage page, string html, List<string> cssPathTags, HttpClient httpClient)
     {
 
         foreach (var path in cssPathTags)
         {
             if (!Regex.IsMatch(path, @"https?://"))
             {
-                var css = System.IO.File.ReadAllText($"{AppDomain.CurrentDomain.BaseDirectory}{path.Replace("~", string.Empty)}");
+                var css = await httpClient.GetStringAsync(path.NormalizeFilePath());
                 await page.AddStyleTagAsync(new AddTagOptions() { Content = css });
             }
 
         }
     }
 
-    public static string NormalizeHtmlString(string html, IHtmlUtils htmlUtils)
+    public static string NormalizeFilePath(this string filePath)
     {
-        return htmlUtils.NormalizeHtmlString(html);
+        return filePath.Replace("../", string.Empty).Replace("..//", string.Empty).Replace("wwwroot", string.Empty).Replace("./", string.Empty).Replace(".//", string.Empty).TrimStart('/').TrimStart('/');
     }
 }
