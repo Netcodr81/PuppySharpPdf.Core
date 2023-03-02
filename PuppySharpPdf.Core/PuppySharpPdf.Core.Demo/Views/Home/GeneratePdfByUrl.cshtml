@@ -1,0 +1,33 @@
+﻿@model PuppySharpPdf.Core.Demo.Models.PdfGenerationByUrlRequest
+@{
+    ViewBag.Title = "Generate PDF by URL";
+}
+
+
+<h1>Generate PDF Using Url</h1>
+
+<form action="/Home/GeneratePdfByUrl" method="post">
+    @Html.LabelFor(x => x.Url)
+    <div class="input-group mb-3">
+
+        @Html.TextBoxFor(x => x.Url, new { @class = "form-control" })
+
+        <div class="input-group-append">
+            <button class="btn btn-success" type="Submit" id="button-addon2">Submit</button>
+        </div>
+
+    </div>
+    @Html.ValidationMessageFor(x => x.Url, "", new { @class = "text-danger text-bold mb-3" })
+    <div class="form-group form-check">
+        @Html.CheckBoxFor(x => x.UseLocalExe, new { @class = "form-check-input" })
+        <label class="form-check-label" for="exampleCheck1">Use local Chrome exe</label>
+        @Html.ValidationMessageFor(x => x.UseLocalExe, "", new { @class = "text-danger text-bold" })
+
+    </div>
+    <div class="form-group form-check">
+        @Html.CheckBoxFor(x => x.DisplayHeaderFooter, new { @class = "form-check-input" })
+        <label class="form-check-label" for="exampleCheck1">Include Header/Footer</label>
+        @Html.ValidationMessageFor(x => x.DisplayHeaderFooter, "", new { @class = "text-danger text-bold" })
+
+    </div>
+</form>

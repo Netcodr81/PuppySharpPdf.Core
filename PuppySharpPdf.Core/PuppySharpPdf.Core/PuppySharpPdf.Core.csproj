@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>PuppySharpPdf.Core</Title>
+    <Authors>Mike Eckel</Authors>
+    <Description>This is a wrapper for the Puppeteer Sharp package. This package abstracts the complexity of using Puppeteer Sharp making it easier to generate PDFs in a .NET 6+ application. With this package you will be able to generate PDF's from a URL, using a Razor (.cshtml) file, or an Html File.</Description>
+    <Copyright>2023</Copyright>
+    <PackageProjectUrl>https://github.com/Netcodr81/PuppySharpPdf.Core</PackageProjectUrl>
+    <PackageIcon>PuppySharpPDFIcon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/Netcodr81/PuppySharpPdf.Core</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>.NET, PDF, HTML, CSHTML, Razor, MVC</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Images\PuppySharpPDFIcon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\PuppySharpPDFIcon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ardalis.Result" Version="7.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+    <PackageReference Include="PuppeteerSharp" Version="9.0.2" />
+  </ItemGroup>
+
+</Project>

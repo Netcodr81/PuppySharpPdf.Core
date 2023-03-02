@@ -1,0 +1,216 @@
+﻿@model PuppySharpPdf.Core.Demo.Models.CorgiTemplateViewModel
+
+@{
+    ViewBag.Title = "Generate PDF Using HTML File & Custom Options";
+}
+
+<h1>Generate PDF Using HTML File & Custom Options</h1>
+
+<div class="card mt-3">
+    <div class="card-header text-center">
+        Generate Pdf using Html File with Custom Options
+    </div>
+    <div class="card-body p-3">
+        <form action="/Home/GeneratePdfUsingHtmlTemplateWithCustomOptions" method="post">
+            <div class="card">
+                <div class="card-body p-3">
+
+                    <h5>Type of Pdf To Generate</h5>
+                    <div class="form-check">
+                        @Html.RadioButtonFor(x => x.PdfType, "CardiganWelshCorgi")
+                        <label class="form-check-label" for="CardiganWelshCorgi">
+                            Cardigan Welsh Corgi
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        @Html.RadioButtonFor(x => x.PdfType, "PembrokeWelshCorgi")
+                        <label class="form-check-label" for="PembrokeWelshCorgi">
+                            Pembroke Welsh Corgi
+                        </label>
+                    </div>
+                    <hr />
+                    <div class="form-group form-check">
+                        @Html.CheckBoxFor(x => x.IncludeHeader, new { @class = "form-check-input" })
+                        <label class="form-check-label" for="exampleCheck1">Include Header</label>
+                        @Html.ValidationMessageFor(x => x.IncludeHeader, "", new { @class = "text-danger text-bold" })
+
+                    </div>
+                    <div class="form-group form-check">
+                        @Html.CheckBoxFor(x => x.IncludeFooter, new { @class = "form-check-input" })
+                        <label class="form-check-label" for="exampleCheck1">Include Footer</label>
+                        @Html.ValidationMessageFor(x => x.IncludeFooter, "", new { @class = "text-danger text-bold" })
+                    </div>
+                    <hr />
+                    <h3>Custom Pdf Options</h3>
+
+                    <div class="form-group form-check">
+                        @Html.CheckBoxFor(x => x.PdfOptions.PrintBackground, new { @class = "form-check-input" })
+                        <label class="form-check-label" for="printBackground">Print Background</label>
+                        @Html.ValidationMessageFor(x => x.PdfOptions.PrintBackground, "", new { @class = "text-danger text-bold" })
+                    </div>
+                    <div class="card">
+                        <h5 class="card-title px-3 pt-3">Paper Format</h5>
+                        <div class="card-body">
+                            <div class="form-check">
+                                @Html.RadioButtonFor(x => x.PdfOptions.FormatEnum, PaperFormatEnum.Letter)
+                                <label class="form-check-label" for="lettrButton">
+                                    Letter
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                @Html.RadioButtonFor(x => x.PdfOptions.FormatEnum, PaperFormatEnum.Legal)
+                                <label class="form-check-label" for="legalButton">
+                                    Legal
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                @Html.RadioButtonFor(x => x.PdfOptions.FormatEnum, PaperFormatEnum.Tabloid)
+                                <label class="form-check-label" for="tabloidButton">
+                                    Tabloid
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                @Html.RadioButtonFor(x => x.PdfOptions.FormatEnum, PaperFormatEnum.Ledger)
+                                <label class="form-check-label" for="ledgerButton">
+                                    Ledger
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                @Html.RadioButtonFor(x => x.PdfOptions.FormatEnum, PaperFormatEnum.A0)
+                                <label class="form-check-label" for="a0Button">
+                                    A0
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                @Html.RadioButtonFor(x => x.PdfOptions.FormatEnum, PaperFormatEnum.A1)
+                                <label class="form-check-label" for="a1Button">
+                                    A1
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                @Html.RadioButtonFor(x => x.PdfOptions.FormatEnum, PaperFormatEnum.A2)
+                                <label class="form-check-label" for="a2Button">
+                                    A2
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                @Html.RadioButtonFor(x => x.PdfOptions.FormatEnum, PaperFormatEnum.A3)
+                                <label class="form-check-label" for="a3Button">
+                                    A3
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                @Html.RadioButtonFor(x => x.PdfOptions.FormatEnum, PaperFormatEnum.A4)
+                                <label class="form-check-label" for="a4Button">
+                                    A4
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                @Html.RadioButtonFor(x => x.PdfOptions.FormatEnum, PaperFormatEnum.A5)
+                                <label class="form-check-label" for="a5Button">
+                                    A5
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                @Html.RadioButtonFor(x => x.PdfOptions.FormatEnum, PaperFormatEnum.A6)
+                                <label class="form-check-label" for="a6Button">
+                                    A6
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-1">
+                        @Html.LabelFor(x => x.PdfOptions.Scale)
+                        @Html.TextBoxFor(x => x.PdfOptions.Scale, new { @class = "form-control w-25" })
+                        @Html.ValidationMessageFor(x => x.PdfOptions.Scale, "", new { @class = "text-danger text-bold" })
+                    </div>
+
+                    <div class="form-group form-check">
+                        @Html.CheckBoxFor(x => x.PdfOptions.DisplayHeaderFooter, new { @class = "form-check-input" })
+                        <label class="form-check-label" for="displayHeaderFooter">Display Header/Footer</label>
+                        @Html.ValidationMessageFor(x => x.PdfOptions.DisplayHeaderFooter, "", new { @class = "text-danger text-bold" })
+                    </div>
+
+                    <div class="form-group mt-1">
+                        @Html.LabelFor(x => x.PdfOptions.HeaderTemplate)
+                        @Html.TextAreaFor(x => x.PdfOptions.HeaderTemplate, new { @class = "form-control", cols = 50, rows = "10" })
+                        @Html.ValidationMessageFor(x => x.PdfOptions.HeaderTemplate, "", new { @class = "text-danger text-bold" })
+                    </div>
+
+                    <div class="form-group mt-1">
+                        @Html.LabelFor(x => x.PdfOptions.FooterTemplate)
+                        @Html.TextAreaFor(x => x.PdfOptions.FooterTemplate, new { @class = "form-control", cols = 50, rows = "10" })
+                        @Html.ValidationMessageFor(x => x.PdfOptions.FooterTemplate, "", new { @class = "text-danger text-bold" })
+                    </div>
+
+                    <div class="form-group form-check mt-1">
+                        @Html.CheckBoxFor(x => x.PdfOptions.Landscape, new { @class = "form-check-input" })
+                        <label class="form-check-label" for="landscape">Landscape Orientation</label>
+                        @Html.ValidationMessageFor(x => x.PdfOptions.Landscape, "", new { @class = "text-danger text-bold" })
+                    </div>
+
+                    <div class="form-group mt-1">
+                        @Html.LabelFor(x => x.PdfOptions.PageRanges)
+                        @Html.TextBoxFor(x => x.PdfOptions.PageRanges, new { @class = "form-control w-25" })
+                        @Html.ValidationMessageFor(x => x.PdfOptions.PageRanges, "", new { @class = "text-danger text-bold" })
+                    </div>
+
+                    <div class="form-group mt-1">
+                        @Html.LabelFor(x => x.PdfOptions.Width)
+                        @Html.TextBoxFor(x => x.PdfOptions.Width, new { @class = "form-control w-25" })
+                        @Html.ValidationMessageFor(x => x.PdfOptions.Width, "", new { @class = "text-danger text-bold" })
+                    </div>
+
+                    <div class="form-group mt-1">
+                        @Html.LabelFor(x => x.PdfOptions.Height)
+                        @Html.TextBoxFor(x => x.PdfOptions.Height, new { @class = "form-control w-25" })
+                        @Html.ValidationMessageFor(x => x.PdfOptions.Height, "", new { @class = "text-danger text-bold" })
+                    </div>
+
+                    <div class="card mt-3">
+                        <h5 class="card-title px-3 pt-3">Margin Options</h5>
+                        <div class="card-body">
+                            <div class="form-group mt-1">
+                                @Html.LabelFor(x => x.PdfOptions.MarginOptions.Top)
+                                @Html.TextBoxFor(x => x.PdfOptions.MarginOptions.Top, new { @class = "form-control w-25" })
+                                @Html.ValidationMessageFor(x => x.PdfOptions.MarginOptions.Top, "", new { @class = "text-danger text-bold" })
+                            </div>
+                            <div class="form-group mt-1">
+                                @Html.LabelFor(x => x.PdfOptions.MarginOptions.Left)
+                                @Html.TextBoxFor(x => x.PdfOptions.MarginOptions.Left, new { @class = "form-control w-25" })
+                                @Html.ValidationMessageFor(x => x.PdfOptions.MarginOptions.Left, "", new { @class = "text-danger text-bold" })
+                            </div>
+                            <div class="form-group mt-1">
+                                @Html.LabelFor(x => x.PdfOptions.MarginOptions.Right)
+                                @Html.TextBoxFor(x => x.PdfOptions.MarginOptions.Right, new { @class = "form-control w-25" })
+                                @Html.ValidationMessageFor(x => x.PdfOptions.MarginOptions.Right, "", new { @class = "text-danger text-bold" })
+                            </div>
+                            <div class="form-group mt-1">
+                                @Html.LabelFor(x => x.PdfOptions.MarginOptions.Bottom)
+                                @Html.TextBoxFor(x => x.PdfOptions.MarginOptions.Bottom, new { @class = "form-control w-25" })
+                                @Html.ValidationMessageFor(x => x.PdfOptions.MarginOptions.Bottom, "", new { @class = "text-danger text-bold" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group form-check mt-3">
+                        @Html.CheckBoxFor(x => x.PdfOptions.PreferCSSPageSize, new { @class = "form-check-input" })
+                        <label class="form-check-label" for="preferCssPageSize">Prefer CSS Page Size</label>
+                        @Html.ValidationMessageFor(x => x.PdfOptions.PreferCSSPageSize, "", new { @class = "text-danger text-bold" })
+                    </div>
+
+                    <div class="form-group form-check mt-1">
+                        @Html.CheckBoxFor(x => x.PdfOptions.OmitBackground, new { @class = "form-check-input" })
+                        <label class="form-check-label" for="omitBackground">Omit Background</label>
+                        @Html.ValidationMessageFor(x => x.PdfOptions.OmitBackground, "", new { @class = "text-danger text-bold" })
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-success" type="submit">Generate PDF</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
