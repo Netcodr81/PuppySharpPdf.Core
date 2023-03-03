@@ -66,7 +66,15 @@ builder.Services.AddPuppySharpPdfCore(renderer =>
     httpClient.BaseAddress = new Uri("http://localhost:5136");
 });
 ```
+<br>
 
+### Add Static File Access
+
+In order to get access to files from your wwwroot folder you will need to ensure the following code is added to your Program.cs file:
+<br>
+```csharp
+app.UseStaticFiles();
+```
 <br>
 
 The PuppySharpPdfCore service will register the PuppyPdfRenderer class as a scoped service. It can be injected throught the use of the IPuppyPdfRenderer interface.
