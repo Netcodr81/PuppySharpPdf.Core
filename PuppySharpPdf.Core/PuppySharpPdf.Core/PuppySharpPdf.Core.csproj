@@ -15,7 +15,11 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>.NET, PDF, HTML, CSHTML, Razor, MVC</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
+    <PackageReleaseNotes>- Update to version 18 of PuppeteerSharp
+- Removed dependency on Ardalis.Result package in favor of custom Result package to avoid version collisions between this package and conusming project.
+- Added support for .NET 7 and .NET 8
+</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
