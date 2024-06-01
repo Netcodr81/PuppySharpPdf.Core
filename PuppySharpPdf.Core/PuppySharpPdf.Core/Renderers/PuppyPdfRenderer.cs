@@ -1,7 +1,8 @@
-﻿using Ardalis.Result;
-using PuppeteerSharp;
+﻿using PuppeteerSharp;
 using PuppeteerSharp.Media;
 using PuppySharpPdf.Core.Common;
+using PuppySharpPdf.Core.Common.Abstractions;
+using PuppySharpPdf.Core.Common.Exceptions;
 using PuppySharpPdf.Core.Interfaces;
 using PuppySharpPdf.Core.Renderers.Configurations;
 using System.Text.RegularExpressions;
@@ -37,7 +38,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
     {
         if (url is null)
         {
-            return Result.Invalid(new List<ValidationError> { new ValidationError { ErrorMessage = "Url can't be empty", ErrorCode = "400" } });
+            return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
         var urlValidator = new Regex("^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$");
@@ -66,7 +67,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
         }
         catch (Exception ex)
         {
-            return Result.Error("An error occurred while generating the pdf");
+            return Result.Failure<byte[]>(new Error("500", "An error occurred while generating the pdf"));
         }
         finally
         {
@@ -79,7 +80,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
     {
         if (url is null)
         {
-            return Result.Invalid(new List<ValidationError> { new ValidationError { ErrorMessage = "Url can't be empty", ErrorCode = "400" } });
+            return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
         var urlValidator = new Regex("^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$");
@@ -113,7 +114,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
         }
         catch (Exception ex)
         {
-            return Result.Error("An error occurred while generating the pdf");
+            return Result.Failure<byte[]>(new Error("500","An error occurred while generating the pdf"));
         }
         finally
         {
@@ -127,7 +128,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
     {
         if (url is null)
         {
-            return Result.Invalid(new List<ValidationError> { new ValidationError { ErrorMessage = "Url can't be empty", ErrorCode = "400" } });
+            return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
         var urlValidator = new Regex("^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$");
@@ -159,7 +160,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
         catch (Exception ex)
         {
 
-            return Result.Error("An error occurred while generating the pdf");
+            return Result.Failure<byte[]>(new Error("500","An error occurred while generating the pdf"));
         }
         finally
         {
@@ -174,7 +175,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
     {
         if (html is null)
         {
-            return Result.Invalid(new List<ValidationError> { new ValidationError { ErrorMessage = "Html string can't be empty", ErrorCode = "400" } });
+            return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
         if (string.IsNullOrEmpty(RendererOptions.ChromeExecutablePath))
@@ -202,7 +203,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
         catch (Exception ex)
         {
 
-            return Result.Error("An error occurred while generating the pdf");
+            return Result.Failure<byte[]>(new Error("500","An error occurred while generating the pdf"));
         }
         finally
         {
@@ -215,7 +216,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
     {
         if (html is null)
         {
-            return Result.Invalid(new List<ValidationError> { new ValidationError { ErrorMessage = "Html string can't be empty", ErrorCode = "400" } });
+            return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
         if (string.IsNullOrEmpty(RendererOptions.ChromeExecutablePath))
@@ -247,7 +248,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
         catch (Exception ex)
         {
 
-            return Result.Error("An error occurred while generating the pdf");
+            return Result.Failure<byte[]>(new Error("500","An error occurred while generating the pdf"));
         }
         finally
         {
@@ -261,7 +262,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
     {
         if (html is null)
         {
-            return Result.Invalid(new List<ValidationError> { new ValidationError { ErrorMessage = "Html string can't be empty", ErrorCode = "400" } });
+            return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
         if (string.IsNullOrEmpty(RendererOptions.ChromeExecutablePath))
@@ -291,7 +292,7 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
         catch (Exception ex)
         {
 
-            return Result.Error("An error occurred while generating the pdf");
+            return Result.Failure<byte[]>(new Error("500","An error occurred while generating the pdf"));
         }
         finally
         {

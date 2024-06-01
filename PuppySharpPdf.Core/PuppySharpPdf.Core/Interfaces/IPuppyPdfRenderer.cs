@@ -1,4 +1,4 @@
-﻿using Ardalis.Result;
+﻿using PuppySharpPdf.Core.Common.Abstractions;
 using PuppySharpPdf.Core.Renderers.Configurations;
 
 namespace PuppySharpPdf.Core.Interfaces;

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -15,6 +15,11 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>.NET, PDF, HTML, CSHTML, Razor, MVC</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Version>1.2.0</Version>
+    <PackageReleaseNotes>- Update to version 18 of PuppeteerSharp
+- Removed dependency on Ardalis.Result package in favor of custom Result package to avoid version collisions between this package and conusming project.
+- Added support for .NET 7 and .NET 8
+</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,10 +42,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ardalis.Result" Version="7.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-    <PackageReference Include="PuppeteerSharp" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="PuppeteerSharp" Version="18.0.0" />
   </ItemGroup>
 
 </Project>
