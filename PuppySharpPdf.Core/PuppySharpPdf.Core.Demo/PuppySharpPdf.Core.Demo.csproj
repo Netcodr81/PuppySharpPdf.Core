@@ -1,19 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Westwind.AspNetCore" Version="3.9.0" />
+    <PackageReference Include="Westwind.AspNetCore" Version="4.0.14" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\PuppySharpPdf.Core\PuppySharpPdf.Core.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <None Update="Chrome\chrome-win\109.0.5412.0.manifest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -97,5 +93,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
 </Project>

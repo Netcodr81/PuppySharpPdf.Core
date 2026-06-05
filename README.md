@@ -12,7 +12,7 @@ You can install the package via NugGet package manager just search for *PuppySha
 <br>
 
 ```powershell
-Install-Package PuppySharpPdf.Core -Version 1.0.0
+Install-Package PuppySharpPdf.Core -Version 1.3.0
 ```
 <br>
 Or via the dotnet CLI.
@@ -20,7 +20,7 @@ Or via the dotnet CLI.
 <br>
 
 ```bash
-dotnet add package PuppySharpPdf.Core --version 1.0.0
+dotnet add package PuppySharpPdf.Core --version 1.3.0
 ```
 
 ### 1. Register Services
@@ -32,8 +32,7 @@ The following options are available in the RendererOptions class:
 <br/>
 
 | Option | Description |
-| ------ | ----------- |
-| IgnoreHTTPSErrors | Whether to ignore HTTPS errors during navigation. Defaults to false. |
+| ------ | ----------- ||
 | Headless | Whether to run Chromium in headless mode. Defaults to true. |
 | ChromeExecutablePath | Path to a Chromium or Chrome executable to run instead of bundled Chromium. If executablePath is a relative path, then it is resolved relative to current working directory. |
 | Args | Addtional arguments to pass to the browser instance. The list of Chromium flags can be found here https://www.chromium.org/developers/how-tos/run-chromium-with-flags/ |

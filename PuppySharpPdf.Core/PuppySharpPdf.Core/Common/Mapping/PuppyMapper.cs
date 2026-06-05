@@ -13,7 +13,7 @@ namespace PuppySharpPdf.Core.Common.Mapping; internal class PuppyMapper : IPuppy
     {
         return new LaunchOptions
         {
-            IgnoreHTTPSErrors = options.IgnoreHTTPSErrors,
+            AcceptInsecureCerts = true,
             Headless = options.Headless,
             ExecutablePath = options.ChromeExecutablePath,
             Args = options.Args,
