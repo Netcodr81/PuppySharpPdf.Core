@@ -1,26 +1,26 @@
-﻿using PuppeteerSharp;
-using PuppeteerSharp.Media;
+using Microsoft.Playwright;
 using PuppySharpPdf.Core.Common;
 using PuppySharpPdf.Core.Common.Abstractions;
-using PuppySharpPdf.Core.Common.Exceptions;
 using PuppySharpPdf.Core.Interfaces;
 using PuppySharpPdf.Core.Renderers.Configurations;
 using System.Text.RegularExpressions;
 
+namespace PuppySharpPdf.Core.Renderers;
 
-namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPdfRenderer
+public class PuppyPdfRenderer : IPuppyPdfRenderer
 {
-    readonly IHtmlUtils _htmlUtils;
-    readonly IPuppyMapper _puppyMapper;
-    readonly IHttpClientFactory _httpClientFactory;
+    private readonly IHtmlUtils _htmlUtils;
+    private readonly IPuppyMapper _puppyMapper;
+    private readonly IHttpClientFactory _httpClientFactory;
+
     public RendererOptions RendererOptions { get; }
 
     public PuppyPdfRenderer(IHtmlUtils htmlUtils, IPuppyMapper puppyMapper, IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
         _puppyMapper = puppyMapper;
-        RendererOptions = new RendererOptions();
         _htmlUtils = htmlUtils;
+        RendererOptions = new RendererOptions();
     }
 
     public PuppyPdfRenderer(Action<RendererOptions> options, IHtmlUtils htmlUtils, IPuppyMapper puppyMapper, IHttpClientFactory httpClientFactory)
@@ -28,9 +28,9 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
         _htmlUtils = htmlUtils;
         _httpClientFactory = httpClientFactory;
         _puppyMapper = puppyMapper;
-        var rendererOptions = new RendererOptions();
-        options?.Invoke(rendererOptions); ;
 
+        var rendererOptions = new RendererOptions();
+        options?.Invoke(rendererOptions);
         RendererOptions = rendererOptions;
     }
 
@@ -41,31 +41,19 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
             return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
-        var urlValidator = new Regex("^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$");
-        if (!urlValidator.IsMatch(url))
-        {
-            url = $"https://{url}";
-        }
+        url = NormalizeUrl(url);
 
-        if (string.IsNullOrEmpty(RendererOptions.ChromeExecutablePath))
-        {
-            var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
-        }
-        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
-        await using var page = await browser.NewPageAsync();
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(_puppyMapper.MapToLaunchOptions(RendererOptions));
+        var page = await browser.NewPageAsync();
 
         try
         {
-            await page.GoToAsync(url);
-            await page.SetJavaScriptEnabledAsync(true);
-            await page.WaitForNetworkIdleAsync();
-
-            var result = await page.PdfDataAsync();
+            await page.GotoAsync(url, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            var result = await page.PdfAsync();
             return Result.Success(result);
-
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return Result.Failure<byte[]>(new Error("500", "An error occurred while generating the pdf"));
         }
@@ -73,102 +61,69 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
         {
             await page.CloseAsync();
         }
-
     }
 
-    public async Task<Result<byte[]>> GeneratePdfFromUrlAsync(string url, Action<Core.Renderers.Configurations.PdfOptions> pdfOptions)
+    public async Task<Result<byte[]>> GeneratePdfFromUrlAsync(string url, Action<PdfOptions> pdfOptions)
     {
         if (url is null)
         {
             return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
-        var urlValidator = new Regex("^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$");
-        if (!urlValidator.IsMatch(url))
-        {
-            url = $"https://{url}";
-        }
+        url = NormalizeUrl(url);
 
-        var customPdfOptions = new Core.Renderers.Configurations.PdfOptions();
+        var customPdfOptions = new PdfOptions();
         pdfOptions?.Invoke(customPdfOptions);
 
-        if (string.IsNullOrEmpty(RendererOptions.ChromeExecutablePath))
-        {
-            var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
-        }
-
-        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
-        await using var page = await browser.NewPageAsync();
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(_puppyMapper.MapToLaunchOptions(RendererOptions));
+        var page = await browser.NewPageAsync();
 
         try
         {
-
-            await page.GoToAsync(url);
-            await page.SetJavaScriptEnabledAsync(true);
-            await page.WaitForNetworkIdleAsync();
-
-            var result = await page.PdfDataAsync(NormailzeHeaderFooters(customPdfOptions).Result.MappedPdfOptions);
+            await page.GotoAsync(url, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            var normalizedOptions = await NormailzeHeaderFooters(customPdfOptions);
+            var result = await page.PdfAsync(normalizedOptions.MappedPdfOptions);
             return Result.Success(result);
-
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return Result.Failure<byte[]>(new Error("500","An error occurred while generating the pdf"));
+            return Result.Failure<byte[]>(new Error("500", "An error occurred while generating the pdf"));
         }
         finally
         {
             await page.CloseAsync();
         }
-
-
     }
 
-    public async Task<Result<byte[]>> GeneratePdfFromUrlAsync(string url, Core.Renderers.Configurations.PdfOptions pdfOptions)
+    public async Task<Result<byte[]>> GeneratePdfFromUrlAsync(string url, PdfOptions pdfOptions)
     {
         if (url is null)
         {
             return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
-        var urlValidator = new Regex("^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$");
-        if (!urlValidator.IsMatch(url))
-        {
-            url = $"https://{url}";
-        }
+        url = NormalizeUrl(url);
 
-        var optionss = pdfOptions.MappedPdfOptions;
-
-        if (string.IsNullOrEmpty(RendererOptions.ChromeExecutablePath))
-        {
-            var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
-        }
-
-
-        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
-        await using var page = await browser.NewPageAsync();
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(_puppyMapper.MapToLaunchOptions(RendererOptions));
+        var page = await browser.NewPageAsync();
 
         try
         {
-            await page.GoToAsync(url);
-            await page.SetJavaScriptEnabledAsync(true);
-            await page.WaitForNetworkIdleAsync();
-            var result = await page.PdfDataAsync(NormailzeHeaderFooters(pdfOptions).Result.MappedPdfOptions);
+            await page.GotoAsync(url, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            var normalizedOptions = await NormailzeHeaderFooters(pdfOptions);
+            var result = await page.PdfAsync(normalizedOptions.MappedPdfOptions);
             return Result.Success(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-
-            return Result.Failure<byte[]>(new Error("500","An error occurred while generating the pdf"));
+            return Result.Failure<byte[]>(new Error("500", "An error occurred while generating the pdf"));
         }
         finally
         {
             await page.CloseAsync();
         }
-
-
-
     }
 
     public async Task<Result<byte[]>> GeneratePdfFromHtmlAsync(string html)
@@ -178,134 +133,120 @@ namespace PuppySharpPdf.Core.Renderers; public class PuppyPdfRenderer : IPuppyPd
             return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
-        if (string.IsNullOrEmpty(RendererOptions.ChromeExecutablePath))
-        {
-            var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
-        }
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(_puppyMapper.MapToLaunchOptions(RendererOptions));
+        var page = await browser.NewPageAsync();
 
-        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
+        await page.EmulateMediaAsync(new PageEmulateMediaOptions { Media = Media.Screen });
 
-        using var page = await browser.NewPageAsync();
-        await page.EmulateMediaTypeAsync(MediaType.Screen);
         try
         {
             html = await _htmlUtils.NormalizeHtmlString(html);
-
             await page.SetContentAsync(html);
-
             await page.ImportCssStyles(html, await _htmlUtils.FindCssTagSources(html), _httpClientFactory.CreateClient(ConfigConstants.PuppyHttpClient));
-            await page.SetJavaScriptEnabledAsync(true);
-            await page.WaitForNetworkIdleAsync();
-            var result = await page.PdfDataAsync(new Core.Renderers.Configurations.PdfOptions().MappedPdfOptions);
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            var result = await page.PdfAsync(new PdfOptions().MappedPdfOptions);
             return Result.Success(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-
-            return Result.Failure<byte[]>(new Error("500","An error occurred while generating the pdf"));
+            return Result.Failure<byte[]>(new Error("500", "An error occurred while generating the pdf"));
         }
         finally
         {
             await page.CloseAsync();
         }
-
     }
 
-    public async Task<Result<byte[]>> GeneratePdfFromHtmlAsync(string html, Action<Core.Renderers.Configurations.PdfOptions> options)
+    public async Task<Result<byte[]>> GeneratePdfFromHtmlAsync(string html, Action<PdfOptions> options)
     {
         if (html is null)
         {
             return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
-        if (string.IsNullOrEmpty(RendererOptions.ChromeExecutablePath))
-        {
-            var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
-        }
-
-        var pdfOptions = new Core.Renderers.Configurations.PdfOptions();
+        var pdfOptions = new PdfOptions();
         options?.Invoke(pdfOptions);
 
-        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(_puppyMapper.MapToLaunchOptions(RendererOptions));
+        var page = await browser.NewPageAsync();
 
-        using var page = await browser.NewPageAsync();
-        await page.EmulateMediaTypeAsync(MediaType.Screen);
+        await page.EmulateMediaAsync(new PageEmulateMediaOptions { Media = Media.Screen });
 
         try
         {
             html = await _htmlUtils.NormalizeHtmlString(html);
-
             await page.SetContentAsync(html);
-
             await page.ImportCssStyles(html, await _htmlUtils.FindCssTagSources(html), _httpClientFactory.CreateClient(ConfigConstants.PuppyHttpClient));
-            await page.SetJavaScriptEnabledAsync(true);
-            await page.WaitForNetworkIdleAsync();
-            var result = await page.PdfDataAsync(NormailzeHeaderFooters(pdfOptions).Result.MappedPdfOptions);
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            var normalizedOptions = await NormailzeHeaderFooters(pdfOptions);
+            var result = await page.PdfAsync(normalizedOptions.MappedPdfOptions);
             return Result.Success(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-
-            return Result.Failure<byte[]>(new Error("500","An error occurred while generating the pdf"));
+            return Result.Failure<byte[]>(new Error("500", "An error occurred while generating the pdf"));
         }
         finally
         {
             await page.CloseAsync();
         }
-
-
     }
 
-    public async Task<Result<byte[]>> GeneratePdfFromHtmlAsync(string html, Core.Renderers.Configurations.PdfOptions pdfOptions)
+    public async Task<Result<byte[]>> GeneratePdfFromHtmlAsync(string html, PdfOptions pdfOptions)
     {
         if (html is null)
         {
             return Result.Failure<byte[]>(Error.EmptyUrl);
         }
 
-        if (string.IsNullOrEmpty(RendererOptions.ChromeExecutablePath))
-        {
-            var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
-        }
+        using var playwright = await Playwright.CreateAsync();
+        await using var browser = await playwright.Chromium.LaunchAsync(_puppyMapper.MapToLaunchOptions(RendererOptions));
+        var page = await browser.NewPageAsync();
 
-
-        await using var browser = await Puppeteer.LaunchAsync(options: _puppyMapper.MapToLaunchOptions(RendererOptions));
-
-        using var page = await browser.NewPageAsync();
-        await page.EmulateMediaTypeAsync(MediaType.Screen);
+        await page.EmulateMediaAsync(new PageEmulateMediaOptions { Media = Media.Screen });
 
         try
         {
             html = await _htmlUtils.NormalizeHtmlString(html);
-
             await page.SetContentAsync(html);
-
             await page.ImportCssStyles(html, await _htmlUtils.FindCssTagSources(html), _httpClientFactory.CreateClient(ConfigConstants.PuppyHttpClient));
-            await page.SetJavaScriptEnabledAsync(true);
-            await page.WaitForNetworkIdleAsync(new WaitForNetworkIdleOptions() { IdleTime = 1000 });
-            var result = await page.PdfDataAsync(NormailzeHeaderFooters(pdfOptions).Result.MappedPdfOptions);
+            await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            var normalizedOptions = await NormailzeHeaderFooters(pdfOptions);
+            var result = await page.PdfAsync(normalizedOptions.MappedPdfOptions);
             return Result.Success(result);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-
-            return Result.Failure<byte[]>(new Error("500","An error occurred while generating the pdf"));
+            return Result.Failure<byte[]>(new Error("500", "An error occurred while generating the pdf"));
         }
         finally
         {
             await page.CloseAsync();
         }
-
     }
 
-    private async Task<PuppySharpPdf.Core.Renderers.Configurations.PdfOptions> NormailzeHeaderFooters(PuppySharpPdf.Core.Renderers.Configurations.PdfOptions pdfOptions)
+    private static string NormalizeUrl(string url)
     {
-        pdfOptions.HeaderTemplate = pdfOptions.HeaderTemplate != null ? await _htmlUtils.NormalizeHtmlString(pdfOptions.HeaderTemplate) : null;
-        pdfOptions.FooterTemplate = pdfOptions.FooterTemplate != null ? await _htmlUtils.NormalizeHtmlString(pdfOptions.FooterTemplate) : null;
+        var urlValidator = new Regex("^https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)$");
+        return urlValidator.IsMatch(url) ? url : $"https://{url}";
+    }
+
+    private async Task<PdfOptions> NormailzeHeaderFooters(PdfOptions pdfOptions)
+    {
+        pdfOptions.HeaderTemplate = !string.IsNullOrWhiteSpace(pdfOptions.HeaderTemplate)
+            ? await _htmlUtils.NormalizeHtmlString(pdfOptions.HeaderTemplate)
+            : string.Empty;
+
+        pdfOptions.FooterTemplate = !string.IsNullOrWhiteSpace(pdfOptions.FooterTemplate)
+            ? await _htmlUtils.NormalizeHtmlString(pdfOptions.FooterTemplate)
+            : string.Empty;
 
         return pdfOptions;
     }
 }
+

@@ -1,4 +1,7 @@
-﻿namespace PuppySharpPdf.Core.Renderers.Configurations;
+﻿using Microsoft.Playwright;
+
+namespace PuppySharpPdf.Core.Renderers.Configurations;
+
 public class PdfOptions
 {
     /// <summary>
@@ -54,12 +57,12 @@ public class PdfOptions
     /// <summary>
     /// Paper width, accepts values labeled with units.
     /// </summary>
-    public object Width { get; set; }
+    public object? Width { get; set; }
 
     /// <summary>
     /// Paper height, accepts values labeled with units.
     /// </summary>
-    public object Height { get; set; }
+    public object? Height { get; set; }
 
     /// <summary>
     /// Paper margins, defaults to none.
@@ -77,21 +80,18 @@ public class PdfOptions
     /// </summary>
     public bool OmitBackground { get; set; }
 
-    public PuppeteerSharp.PdfOptions MappedPdfOptions => new PuppeteerSharp.PdfOptions
+    public PagePdfOptions MappedPdfOptions => new()
     {
-        PrintBackground = this.PrintBackground,
-        Format = new PuppeteerSharp.Media.PaperFormat(this.Format.Width, this.Format.Height),
-        Scale = this.Scale,
-        DisplayHeaderFooter = this.DisplayHeaderFooter,
-        FooterTemplate = this.FooterTemplate,
-        HeaderTemplate = this.HeaderTemplate,
-        Landscape = this.Landscape,
-        PageRanges = this.PageRanges,
-        Width = this.Width,
-        Height = this.Height,
-        MarginOptions = this.MarginOptions.MappedMarginOptions,
-        PreferCSSPageSize = this.PreferCSSPageSize,
-        OmitBackground = this.OmitBackground,
-
+        PrintBackground = PrintBackground,
+        Scale = (float)Scale,
+        DisplayHeaderFooter = DisplayHeaderFooter,
+        FooterTemplate = FooterTemplate,
+        HeaderTemplate = HeaderTemplate,
+        Landscape = Landscape,
+        PageRanges = PageRanges,
+        Width = Width?.ToString() ?? $"{Format.Width}in",
+        Height = Height?.ToString() ?? $"{Format.Height}in",
+        Margin = MarginOptions.MappedMarginOptions,
+        PreferCSSPageSize = PreferCSSPageSize
     };
 }

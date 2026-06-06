@@ -1,10 +1,11 @@
-﻿using PuppeteerSharp;
+﻿using Microsoft.Playwright;
 using System.Text.RegularExpressions;
 
 namespace PuppySharpPdf.Core.Common;
+
 public static class PuppySharpExtensions
 {
-    public static async Task ImportCssStyles(this PuppeteerSharp.IPage page, string html, List<string> cssPathTags, HttpClient httpClient)
+    public static async Task ImportCssStyles(this IPage page, string html, List<string> cssPathTags, HttpClient httpClient)
     {
 
         foreach (var path in cssPathTags)
@@ -12,7 +13,7 @@ public static class PuppySharpExtensions
             if (!Regex.IsMatch(path, @"https?://"))
             {
                 var css = await httpClient.GetStringAsync(path.NormalizeFilePath());
-                await page.AddStyleTagAsync(new AddTagOptions() { Content = css });
+                await page.AddStyleTagAsync(new PageAddStyleTagOptions() { Content = css });
             }
 
         }

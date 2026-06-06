@@ -1,10 +1,9 @@
-﻿namespace PuppySharpPdf.Core.Renderers.Configurations;
+using Microsoft.Playwright;
+
+namespace PuppySharpPdf.Core.Renderers.Configurations;
+
 public class MarginOptions
 {
-    public MarginOptions()
-    {
-    }
-
     /// <summary>
     /// Top margin, accepts values labeled with units.
     /// </summary>
@@ -25,11 +24,11 @@ public class MarginOptions
     /// </summary>
     public string? Right { get; set; }
 
-    public PuppeteerSharp.Media.MarginOptions MappedMarginOptions => new PuppeteerSharp.Media.MarginOptions
+    public Margin MappedMarginOptions => new()
     {
-        Top = this.Top,
-        Left = this.Left,
-        Bottom = this.Bottom,
-        Right = this.Right
+        Top = Top,
+        Left = Left,
+        Bottom = Bottom,
+        Right = Right
     };
 }
