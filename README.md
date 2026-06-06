@@ -1,5 +1,5 @@
 ﻿# PuppySharpPdf.Core
-This is a wrapper for the Puppeteer Sharp package. This package abstracts the complexity of using Puppeteer Sharp making it easier to generate PDFs in a .NET Core applications. With this package you will be able to generate PDF's from a URL, using a Razor (.cshtml) file, or an Html File.
+This is a wrapper for Microsoft Playwright. This package abstracts Playwright PDF generation and makes it easier to generate PDFs in .NET 8+ applications. With this package you can generate PDFs from a URL, Razor (.cshtml) views, or HTML strings.
 
 ## License
 
@@ -7,12 +7,12 @@ MIT
 
 ## Getting Started
 
-You can install the package via NugGet package manager just search for *PuppySharpPdf.Core*. You can also intall via powershell using the following command.
+You can install the package via NuGet Package Manager by searching for *PuppySharpPdf.Core*. You can also install it via PowerShell using the following command.
 <br>
 <br>
 
 ```powershell
-Install-Package PuppySharpPdf.Core -Version 1.3.0
+Install-Package PuppySharpPdf.Core -Version 1.4.0
 ```
 <br>
 Or via the dotnet CLI.
@@ -20,7 +20,7 @@ Or via the dotnet CLI.
 <br>
 
 ```bash
-dotnet add package PuppySharpPdf.Core --version 1.3.0
+dotnet add package PuppySharpPdf.Core --version 1.4.0
 ```
 
 ### 1. Register Services
@@ -32,10 +32,10 @@ The following options are available in the RendererOptions class:
 <br/>
 
 | Option | Description |
-| ------ | ----------- ||
+| ------ | ----------- |
 | Headless | Whether to run Chromium in headless mode. Defaults to true. |
 | ChromeExecutablePath | Path to a Chromium or Chrome executable to run instead of bundled Chromium. If executablePath is a relative path, then it is resolved relative to current working directory. |
-| Args | Addtional arguments to pass to the browser instance. The list of Chromium flags can be found here https://www.chromium.org/developers/how-tos/run-chromium-with-flags/ |
+| Args | Additional arguments to pass to the browser instance. The list of Chromium flags can be found here: https://www.chromium.org/developers/how-tos/run-chromium-with-flags/ |
 | Timeout | Maximum time in milliseconds to wait for the browser instance to start. Defaults to 30000 (30 seconds). Pass 0 to disable timeout. |
 
 ### HttpClient configuration only
@@ -76,7 +76,7 @@ app.UseStaticFiles();
 ```
 <br>
 
-The PuppySharpPdfCore service will register the PuppyPdfRenderer class as a scoped service. It can be injected throught the use of the IPuppyPdfRenderer interface.
+The PuppySharpPdfCore service registers `IPuppyPdfRenderer` and supporting dependencies with DI. Inject `IPuppyPdfRenderer` into your page model, controller, or service.
 
 <br>
 
@@ -96,15 +96,56 @@ public class HomeController : Controller
 
 }
 ```
+
+### Razor Pages Example
+
+```csharp
+// Pages/Reports/Index.cshtml.cs
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using PuppySharpPdf.Core.Interfaces;
+
+public class IndexModel : PageModel
+{
+    private readonly IPuppyPdfRenderer _pdfRenderer;
+
+    public IndexModel(IPuppyPdfRenderer pdfRenderer)
+    {
+        _pdfRenderer = pdfRenderer;
+    }
+
+    public async Task<IActionResult> OnPostGenerateAsync(CancellationToken cancellationToken)
+    {
+        var html = "<html><body><h1>Razor Pages PDF</h1></body></html>";
+        var result = await _pdfRenderer.GeneratePdfFromHtmlAsync(html, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error.Name);
+        }
+
+        return File(result.Value, "application/pdf", "razor-pages-report.pdf");
+    }
+}
+```
 ## Usage
 
-PuppySharpPdf is meant to be easy to use. The following will show you how to use the package
-followed by some gotchas about the Chromium based engine to look out for.
+PuppySharpPdf is meant to be easy to use. The following shows how to use the package,
+followed by gotchas about the Chromium-based engine.
 
+
+### Playwright runtime requirements
+
+This package uses Microsoft Playwright under the hood. Ensure Playwright browser binaries are installed in your runtime environment before generating PDFs.
+
+During local development, run:
+
+```bash
+playwright install chromium
+```
 
 ### Generating a PDF from a URL
-To generate a PDF from a URL you will need to call the *GeneratePdfFromUrl* method on the *GeneratePdfFromUrlAsync* class. The *GeneratePdfFromUrlAsync* method takes two parameters, the first is the URL to generate the PDF from and the second is any PDF configurations using the *PdfOptions* class. The renderer follows the Result Pattern using the [Ardalis.Result](https://github.com/ardalis/result) nuget package and will return a ***Result<byte[]>***. This pattern allows you to check if
-the PDF was successfully Rendered. To get the byte array value, call the *.Value* property on the returned object. From here you can save the PDF to a file or stream it to the browser. Below is an example of rendering a PDF from a URL in an Asp.NET Core 7 MVC application.
+To generate a PDF from a URL, call `GeneratePdfFromUrlAsync`. The method accepts a URL and optional `PdfOptions`, and returns `Result<byte[]>`. Check `IsSuccess` before reading `.Value`, then save to a file or stream it to the browser. Below is an ASP.NET Core MVC example.
 
 ```csharp
 public class HomeController : Controller
@@ -157,7 +198,7 @@ The following options are available in the PdfOptions class:
 | Height | Paper height, accepts values labeled with units. |
 | MarginOptions | Uses the MarginOptions class to set the top, left, right, and bottom margins. |
 | PreferCSSPageSize | Give any CSS @page size declared in the page priority over what is declared in width and height or format options. Defaults to false, which will scale the content to fit the paper size. |
-| OmitBackground | hides default white background and allows generating PDFs with transparency. Defaults to false. |
+| OmitBackground | Kept for backward compatibility. The Playwright backend does not currently apply this option. |
 
 <br/>
 The following is all the available options in the PaperFormat class:
@@ -193,8 +234,7 @@ Options | Description |
 ### Generating a PDF from a Razor (.cshtml) / Html file
 
 To generate a PDF from a Razor/Html file you will need to call the *GeneratePdfFromHtmlAsync* method on the *PuppyPdfRenderer* class. The *GeneratePdfFromHtmlAsync* method takes two parameters, the first is the HTML string (created by the Razor/Html file or a just a valid HTML string) and the second is any PDF configurations using the *PdfOptions* class. The renderer will return a byte array of the PDF.
-From here you can save the PDF to a file or stream it to the browser. Below is an example of rendering a PDF from a Razor/HTML in an Asp.NET Core 7 MVC application. In this case I am using the WestWind.AspNetCore nuget package to render an html string from
-a Razor file and the build in File class to read in an HTML file to a string.
+From here you can save the PDF to a file or stream it to the browser. Below is an example of rendering a PDF from Razor/HTML in an ASP.NET Core MVC application. In this example, Westwind.AspNetCore is used to render an HTML string from a Razor view, and the built-in `File` class is used to read an HTML file into a string.
 
 #### HTML File
 
@@ -215,9 +255,7 @@ return File(pdf.Value, "application/pdf", "PdfFromUrl.pdf");
 ```csharp
 using Westwind.AspNetCore;
 
-var pdfRenderer = new PuppyPdfRenderer();
-
-var html =  await ViewRenderer.RenderPartialViewAsync("../Shared/Templates/PdfTempalte.cshtml");
+var html = await ViewRenderer.RenderPartialViewAsync("../Shared/Templates/PdfTemplate.cshtml");
 
 var pdf = await _pdfRenderer.GeneratePdfFromHtmlAsync(html);
 
@@ -230,7 +268,7 @@ The *GeneratePdfFromHtmlAsync* accepts the same *PdfOptions* class that the *Gen
 
 ### Gotchas
 
-There are a few gotchas to be aware of when using this package. All these gotchas are due to restrictions of the underlying Chromium browser. 
+There are a few gotchas to be aware of when using this package. These are due to restrictions of the underlying Chromium browser.
 
 #### Headers and Footers
 

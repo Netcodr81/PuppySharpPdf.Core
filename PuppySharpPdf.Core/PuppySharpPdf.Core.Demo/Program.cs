@@ -15,7 +15,7 @@ builder.Services.AddControllersWithViews();
 //    config.BaseAddress = new Uri("http://localhost:5136");
 //});
 
-// Configuration used to download and cache Chromium instance
+// Configuration using Playwright-managed Chromium
 builder.Services.AddPuppySharpPdfCore(config =>
     {
         config.BaseAddress = new Uri("http://localhost:5136");

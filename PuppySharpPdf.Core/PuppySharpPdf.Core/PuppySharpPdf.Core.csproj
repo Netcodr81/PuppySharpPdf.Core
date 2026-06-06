@@ -7,19 +7,20 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>PuppySharpPdf.Core</Title>
     <Authors>Mike Eckel</Authors>
-    <Description>This is a wrapper for the Puppeteer Sharp package. This package abstracts the complexity of using Puppeteer Sharp making it easier to generate PDFs in a .NET 6+ application. With this package you will be able to generate PDF's from a URL, using a Razor (.cshtml) file, or an Html File.</Description>
+    <Description>This is a wrapper for Microsoft Playwright. This package abstracts Playwright PDF rendering to make it easier to generate PDFs in .NET 8+ applications from URLs, Razor views (.cshtml), or HTML strings.</Description>
     <Copyright>2025</Copyright>
     <PackageProjectUrl>https://github.com/Netcodr81/PuppySharpPdf.Core</PackageProjectUrl>
     <PackageIcon>PuppySharpPDFIcon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Netcodr81/PuppySharpPdf.Core</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>.NET, PDF, HTML, CSHTML, Razor, MVC</PackageTags>
+    <PackageTags>.NET, PDF, HTML, CSHTML, Razor, Razor Pages, Playwright</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>1.3.0</Version>
-    <PackageReleaseNotes>- Update to version 20 of PuppeteerSharp
-- Removed dependency on Ardalis.Result package in favor of custom Result package to avoid version collisions between this package and conusming project.
-- Added support for .NET 9
-- Removed support fot .NET 6 and .NET 7
+    <Version>1.4.0</Version>
+    <PackageReleaseNotes>- Migrated rendering engine from PuppeteerSharp to Microsoft.Playwright.
+- Improved performance by reusing a shared Playwright browser instance.
+- Added CancellationToken overloads for all rendering APIs.
+- Removed sync-over-async patterns in HTML utilities.
+- Added support for .NET 10 and retained .NET 8/.NET 9 support.
 </PackageReleaseNotes>
   </PropertyGroup>
 
